@@ -5,16 +5,19 @@ from collections import defaultdict
 
 
 def caesar(data, key):
-    res = ''
+    res = []
+    LETTERS_AMOUNT = 26
+    UPPER_LETTERS_START_ASCII = 65
+    LOWER_LETTERS_START_ASCII = 97
     for i in range(len(data)):
         c = data[i]
         if c in "0123456789 -.,;:!?\n\t":
-            res += c
+            res.append(c)
         elif c.isupper():
-            res += chr((ord(c) + key-65) % 26 + 65)
+            res.append(chr((ord(c) + key-UPPER_LETTERS_START_ASCII) % LETTERS_AMOUNT + UPPER_LETTERS_START_ASCII))
         else:
-            res += chr((ord(c) + key-97) % 26 + 97)
-    return res
+            res.append(chr((ord(c) + key-LOWER_LETTERS_START_ASCII) % LETTERS_AMOUNT + LOWER_LETTERS_START_ASCII))
+    return ''.join(res)
 
 def vigenere(data, key, cmd):
     row = [chr(x) for x in range(65, 91)]
@@ -33,23 +36,22 @@ def vigenere(data, key, cmd):
             it+=1
         if it >= len(key):
             it = 0
-    cip = ''
+    cip = []
     for c, k in data_code:
         if k < 0:
-            cip+=c
+            cip.append(c)
         else:
             if cmd == 'encode':
-                cip+=row[(c+k) % len(row)]
+                cip.append(row[(c+k) % len(row)])
             elif cmd == 'decode':
-                cip+=row[(c-k+len(row) % len(row))]
-    return cip
+                cip.append(row[(c-k+len(row) % len(row))])
+    return ''.join(cip)
 
 def encode_decode(args):
     # get text to encode/decode
     if args.input_file:
-        f = open(args.input_file,'r')
-        data = f.read()
-        f.close()
+        with open(args.input_file, 'r') as f:
+            data = f.read()
     else:
         data = input()
     # call cipher/decode function
@@ -64,9 +66,8 @@ def encode_decode(args):
 
     # write or print encoded/decoded text
     if args.output_file:
-        f2 = open(args.output_file, 'w')
-        f2.write(res)
-        f2.close()
+        with open(args.output_file, 'w') as f2:
+            f2.write(res)
     else:
         print(res)
 
@@ -88,30 +89,26 @@ def get_hist(data):
 def train(args):
     # get text to analyse
     if args.text_file:
-        f = open(args.text_file,'r')
-        data = f.read()
-        f.close()
+        with open(args.text_file,'r') as f:
+            data = f.read()
     else:
         data = input()
     # make histogram
     dic = get_hist(data)
     # write histogram to file as json
-    f2 = open(args.model_file, 'w')
-    f2.write(json.dumps(dic))
-    f2.close()
+    with open(args.model_file, 'w') as f2:
+        f2.write(json.dumps(dic))
 
 def hack(args):
     # get text to hack
     if args.input_file:
-        f = open(args.input_file,'r')
-        data = f.read()
-        f.close()
+        with open(args.input_file,'r') as f:
+            data = f.read()
     else:
         data = input()
     # get model
-    f2 = open(args.model_file,'r')
-    model = json.load(f2)
-    f2.close()
+    with open(args.model_file,'r') as f2:
+        model = json.load(f2)
     model = defaultdict(float, model)
     # hacking
     difs = []
@@ -119,7 +116,7 @@ def hack(args):
         t = caesar(data, i)
         h = get_hist(t)
         h = defaultdict(float, h)
-        #calc dif
+        # calc dif
         sum = 0
         for k in model.keys():
             sum+=pow(model[k]-h[k], 2)
@@ -128,9 +125,8 @@ def hack(args):
     hacked = caesar(data, key)
     # write or print hacked text
     if args.output_file:
-        f3 = open(args.output_file, 'w')
-        f3.write(hacked)
-        f3.close()
+        with open(args.output_file, 'w') as f3:
+            f3.write(hacked)
     else:
         print(hacked)
 
